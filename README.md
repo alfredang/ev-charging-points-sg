@@ -114,6 +114,25 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 }
 ```
 
+## Deployment
+
+### GitHub Pages (Automatic)
+
+The app automatically deploys to GitHub Pages on every push to `main`.
+
+**Setup GitHub Secrets:**
+
+1. Go to your repository Settings → Secrets and variables → Actions
+2. Add these repository secrets:
+   - `GOOGLE_MAPS_API_KEY` - Your Google Maps API key
+   - `LTA_API_KEY` - Your LTA DataMall API key
+
+3. Enable GitHub Pages:
+   - Go to Settings → Pages
+   - Source: "GitHub Actions"
+
+The site will be available at: `https://<username>.github.io/ev-charging-points-sg/`
+
 ## License
 
 MIT License
