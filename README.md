@@ -55,9 +55,10 @@ ev-charging-points-sg/
 
 2. Set up API keys:
    ```bash
-   cp config.example.js config.js
+   cp .env.example .env
+   # Edit .env and add your API keys
+   python generate-config.py
    ```
-   Then edit `config.js` and add your API keys.
 
 3. Start a local server:
    ```bash
