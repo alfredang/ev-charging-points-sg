@@ -1,0 +1,13 @@
+{
+  "name": "ev-charging-points-sg",
+  "version": "1.0.0",
+  "description": "EV Charging Points Singapore - Interactive map of EV chargers",
+  "scripts": {
+    "build": "node scripts/generate-config.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alfredang/ev-charging-points-sg.git"
+  },
+  "license": "MIT"
+}
