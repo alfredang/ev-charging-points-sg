@@ -1,6 +1,7 @@
 {
   "name": "ev-charging-points-sg",
   "version": "1.0.0",
+  "type": "module",
   "description": "EV Charging Points Singapore - Interactive map of EV chargers",
   "scripts": {
     "build": "node scripts/generate-config.js"

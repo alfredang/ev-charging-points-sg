@@ -1,9 +1,6 @@
 /**
  * Vercel Serverless API Route
  * Proxies requests to LTA DataMall Batch API
- *
- * The Batch API returns a link to an S3 file containing all data.
- * We fetch that link, then download the actual data.
  */
 
 export default async function handler(req, res) {
@@ -12,7 +9,6 @@ export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-    // Handle preflight
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
     }
@@ -27,11 +23,10 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Step 1: Get the download link from Batch API
+        // Step 1: Get download link from Batch API
         const batchUrl = 'https://datamall2.mytransport.sg/ltaodataservice/EVCBatch';
 
         const batchResponse = await fetch(batchUrl, {
-            method: 'GET',
             headers: {
                 'AccountKey': apiKey,
                 'accept': 'application/json'
@@ -43,26 +38,67 @@ export default async function handler(req, res) {
         }
 
         const batchData = await batchResponse.json();
-
-        // Extract the S3 download link
         const downloadLink = batchData.value?.[0]?.Link;
 
         if (!downloadLink) {
-            throw new Error('No download link in Batch API response');
+            throw new Error('No download link in response');
         }
 
-        // Step 2: Download the actual data from S3
+        // Step 2: Download actual data from S3
         const dataResponse = await fetch(downloadLink);
 
         if (!dataResponse.ok) {
-            throw new Error(`Data download failed with ${dataResponse.status}`);
+            throw new Error(`S3 download failed: ${dataResponse.status}`);
         }
 
-        const chargingPoints = await dataResponse.json();
+        const rawData = await dataResponse.json();
 
-        // Return in the expected format
+        // Step 3: Transform data to expected format
+        // The S3 data has evLocationsData array with nested chargingPoints
+        const locations = rawData.evLocationsData || [];
+
+        const transformedData = locations.map(loc => {
+            // Count available chargers
+            let totalLots = 0;
+            let availableLots = 0;
+
+            if (loc.chargingPoints) {
+                loc.chargingPoints.forEach(cp => {
+                    if (cp.plugTypes) {
+                        cp.plugTypes.forEach(pt => {
+                            if (pt.evIds) {
+                                totalLots += pt.evIds.length;
+                                pt.evIds.forEach(ev => {
+                                    // status "1" means available
+                                    if (ev.status === "1") {
+                                        availableLots++;
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+
+            // Get operator from first charging point
+            const operator = loc.chargingPoints?.[0]?.operator || '';
+            const chargerType = loc.chargingPoints?.[0]?.plugTypes?.[0]?.plugType || '';
+
+            return {
+                AddressInfo: loc.name || loc.address,
+                PostalCode: loc.postalCode || '',
+                Operator: operator,
+                Type: chargerType,
+                Latitude: String(loc.latitude),
+                Longitude: String(loc.longtitude), // Note: API has typo "longtitude"
+                TotalLots: totalLots,
+                AvailableLots: availableLots
+            };
+        });
+
         return res.status(200).json({
-            value: chargingPoints
+            value: transformedData,
+            lastUpdated: rawData.LastUpdatedTime
         });
 
     } catch (error) {
