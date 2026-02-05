@@ -1,6 +1,9 @@
 /**
  * Vercel Serverless API Route
  * Proxies requests to LTA DataMall Batch API
+ *
+ * The Batch API returns a link to an S3 file containing all data.
+ * We fetch that link, then download the actual data.
  */
 
 export default async function handler(req, res) {
@@ -16,22 +19,18 @@ export default async function handler(req, res) {
 
     const apiKey = process.env.LTA_API_KEY;
 
-    // Debug: Check if API key is set
     if (!apiKey) {
-        console.error('LTA_API_KEY environment variable is not set');
         return res.status(500).json({
             error: 'Server configuration error',
             details: 'API key not configured'
         });
     }
 
-    // Use Batch API - returns all data in single request
-    const apiUrl = 'https://datamall2.mytransport.sg/ltaodataservice/EVCBatch';
-
     try {
-        console.log('Fetching from:', apiUrl);
+        // Step 1: Get the download link from Batch API
+        const batchUrl = 'https://datamall2.mytransport.sg/ltaodataservice/EVCBatch';
 
-        const response = await fetch(apiUrl, {
+        const batchResponse = await fetch(batchUrl, {
             method: 'GET',
             headers: {
                 'AccountKey': apiKey,
@@ -39,24 +38,35 @@ export default async function handler(req, res) {
             }
         });
 
-        console.log('LTA API response status:', response.status);
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('LTA API error response:', errorText);
-            return res.status(response.status).json({
-                error: 'LTA API error',
-                status: response.status,
-                details: errorText
-            });
+        if (!batchResponse.ok) {
+            throw new Error(`Batch API returned ${batchResponse.status}`);
         }
 
-        const data = await response.json();
-        console.log('Data received, records:', data.value?.length || 0);
+        const batchData = await batchResponse.json();
 
-        return res.status(200).json(data);
+        // Extract the S3 download link
+        const downloadLink = batchData.value?.[0]?.Link;
+
+        if (!downloadLink) {
+            throw new Error('No download link in Batch API response');
+        }
+
+        // Step 2: Download the actual data from S3
+        const dataResponse = await fetch(downloadLink);
+
+        if (!dataResponse.ok) {
+            throw new Error(`Data download failed with ${dataResponse.status}`);
+        }
+
+        const chargingPoints = await dataResponse.json();
+
+        // Return in the expected format
+        return res.status(200).json({
+            value: chargingPoints
+        });
+
     } catch (error) {
-        console.error('API proxy error:', error);
+        console.error('API error:', error.message);
         return res.status(500).json({
             error: 'Failed to fetch charging points',
             details: error.message
