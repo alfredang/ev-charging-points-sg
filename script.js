@@ -12,7 +12,7 @@
 const CONFIG = {
     // LTA DataMall API configuration
     API_URL: 'https://datamall2.mytransport.sg/ltaodataservice/EVChargingPoints',
-    API_KEY: 'ZxnKX+y1R8Cqq/xSVrbOEA==',
+    API_KEY: window.CONFIG_KEYS?.LTA_API_KEY || '',
 
     // Default map center (Singapore)
     SINGAPORE_CENTER: { lat: 1.3521, lng: 103.8198 },

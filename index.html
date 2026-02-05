@@ -55,8 +55,14 @@
         </main>
     </div>
 
-    <!-- Google Maps JavaScript API -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB_0klBkKP7_9i5eO8I5M4UDrBxYB5vwSw&callback=initMap" async defer></script>
+    <!-- Configuration (create config.js from config.example.js) -->
+    <script src="config.js"></script>
+    <!-- Google Maps JavaScript API (key loaded from config.js) -->
+    <script>
+        document.write('<script src="https://maps.googleapis.com/maps/api/js?key=' +
+            (window.CONFIG_KEYS?.GOOGLE_MAPS_API_KEY || 'YOUR_API_KEY') +
+            '&callback=initMap" async defer><\/script>');
+    </script>
     <script src="script.js"></script>
 </body>
 </html>

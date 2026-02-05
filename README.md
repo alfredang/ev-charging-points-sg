@@ -53,34 +53,48 @@ ev-charging-points-sg/
    cd ev-charging-points-sg
    ```
 
-2. Start a local server:
+2. Set up API keys:
+   ```bash
+   cp config.example.js config.js
+   ```
+   Then edit `config.js` and add your API keys.
+
+3. Start a local server:
    ```bash
    python3 -m http.server 8000
    ```
 
-3. Open http://localhost:8000 in your browser
+4. Open http://localhost:8000 in your browser
 
-4. Allow location access when prompted (optional, for distance sorting)
+5. Allow location access when prompted (optional, for distance sorting)
 
 ## API Configuration
 
-### Google Maps API Key
+### Getting API Keys
 
-The application uses the Google Maps JavaScript API. To use your own API key:
+**Google Maps API Key:**
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a project and enable the Maps JavaScript API
+3. Create credentials (API key)
+4. Add the key to `config.js`
 
-1. Get an API key from [Google Cloud Console](https://console.cloud.google.com/)
-2. Enable the Maps JavaScript API
-3. Replace the key in `index.html`:
-   ```html
-   <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap" async defer></script>
-   ```
+**LTA DataMall API Key:**
+1. Register at [LTA DataMall](https://datamall.lta.gov.sg/content/datamall/en.html)
+2. Request API access
+3. Add the key to `config.js`
 
-### LTA DataMall API
+### Configuration File
 
-The application fetches EV charging point data from the [LTA DataMall API](https://datamall.lta.gov.sg/content/datamall/en.html).
+Copy `config.example.js` to `config.js` and add your keys:
 
-- **Endpoint**: `https://datamall2.mytransport.sg/ltaodataservice/EVChargingPoints`
-- **Authentication**: API key passed via `AccountKey` header
+```javascript
+window.CONFIG_KEYS = {
+    GOOGLE_MAPS_API_KEY: 'your-google-maps-key',
+    LTA_API_KEY: 'your-lta-datamall-key'
+};
+```
+
+**Note:** `config.js` is gitignored to prevent exposing API keys
 
 ## Distance Calculation
 
