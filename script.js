@@ -22,51 +22,55 @@ const CONFIG = {
     // Pagination settings
     PAGE_SIZE: 500,
 
-    // Marker colors
+    // Marker icons - Google Maps style teardrop pins
     MARKERS: {
         available: {
             url: 'data:image/svg+xml,' + encodeURIComponent(`
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36">
-                    <path fill="#22c55e" stroke="#15803d" stroke-width="1" d="M12 0C5.4 0 0 5.4 0 12c0 9 12 24 12 24s12-15 12-24c0-6.6-5.4-12-12-12z"/>
-                    <circle fill="white" cx="12" cy="12" r="6"/>
-                    <text x="12" y="15" text-anchor="middle" font-size="8" font-weight="bold" fill="#15803d">EV</text>
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="40" viewBox="0 0 28 40">
+                    <path fill="#16a34a" d="M14 0C6.268 0 0 6.268 0 14c0 10.5 14 26 14 26s14-15.5 14-26C28 6.268 21.732 0 14 0z"/>
+                    <circle fill="#166534" cx="14" cy="14" r="6"/>
+                    <circle fill="white" cx="14" cy="14" r="4"/>
                 </svg>
             `),
-            scaledSize: { width: 32, height: 48 }
+            scaledSize: { width: 28, height: 40 },
+            anchor: { x: 14, y: 40 }
         },
         occupied: {
             url: 'data:image/svg+xml,' + encodeURIComponent(`
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36">
-                    <path fill="#ef4444" stroke="#b91c1c" stroke-width="1" d="M12 0C5.4 0 0 5.4 0 12c0 9 12 24 12 24s12-15 12-24c0-6.6-5.4-12-12-12z"/>
-                    <circle fill="white" cx="12" cy="12" r="6"/>
-                    <text x="12" y="15" text-anchor="middle" font-size="8" font-weight="bold" fill="#b91c1c">EV</text>
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="40" viewBox="0 0 28 40">
+                    <path fill="#dc2626" d="M14 0C6.268 0 0 6.268 0 14c0 10.5 14 26 14 26s14-15.5 14-26C28 6.268 21.732 0 14 0z"/>
+                    <circle fill="#991b1b" cx="14" cy="14" r="6"/>
+                    <circle fill="white" cx="14" cy="14" r="4"/>
                 </svg>
             `),
-            scaledSize: { width: 32, height: 48 }
+            scaledSize: { width: 28, height: 40 },
+            anchor: { x: 14, y: 40 }
         },
         partial: {
             url: 'data:image/svg+xml,' + encodeURIComponent(`
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36">
-                    <path fill="#f59e0b" stroke="#b45309" stroke-width="1" d="M12 0C5.4 0 0 5.4 0 12c0 9 12 24 12 24s12-15 12-24c0-6.6-5.4-12-12-12z"/>
-                    <circle fill="white" cx="12" cy="12" r="6"/>
-                    <text x="12" y="15" text-anchor="middle" font-size="8" font-weight="bold" fill="#b45309">EV</text>
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="40" viewBox="0 0 28 40">
+                    <path fill="#ea580c" d="M14 0C6.268 0 0 6.268 0 14c0 10.5 14 26 14 26s14-15.5 14-26C28 6.268 21.732 0 14 0z"/>
+                    <circle fill="#c2410c" cx="14" cy="14" r="6"/>
+                    <circle fill="white" cx="14" cy="14" r="4"/>
                 </svg>
             `),
-            scaledSize: { width: 32, height: 48 }
+            scaledSize: { width: 28, height: 40 },
+            anchor: { x: 14, y: 40 }
         },
         unknown: {
             url: 'data:image/svg+xml,' + encodeURIComponent(`
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36">
-                    <path fill="#6b7280" stroke="#4b5563" stroke-width="1" d="M12 0C5.4 0 0 5.4 0 12c0 9 12 24 12 24s12-15 12-24c0-6.6-5.4-12-12-12z"/>
-                    <circle fill="white" cx="12" cy="12" r="6"/>
-                    <text x="12" y="15" text-anchor="middle" font-size="8" font-weight="bold" fill="#4b5563">EV</text>
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="40" viewBox="0 0 28 40">
+                    <path fill="#6b7280" d="M14 0C6.268 0 0 6.268 0 14c0 10.5 14 26 14 26s14-15.5 14-26C28 6.268 21.732 0 14 0z"/>
+                    <circle fill="#4b5563" cx="14" cy="14" r="6"/>
+                    <circle fill="white" cx="14" cy="14" r="4"/>
                 </svg>
             `),
-            scaledSize: { width: 32, height: 48 }
+            scaledSize: { width: 28, height: 40 },
+            anchor: { x: 14, y: 40 }
         },
         user: {
             url: 'data:image/svg+xml,' + encodeURIComponent(`
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                     <circle fill="#2563eb" stroke="white" stroke-width="3" cx="12" cy="12" r="8"/>
                 </svg>
             `),
@@ -489,16 +493,26 @@ function plotMarkers() {
     chargingPoints.forEach(point => {
         const markerConfig = CONFIG.MARKERS[point.status] || CONFIG.MARKERS.unknown;
 
+        const iconConfig = {
+            url: markerConfig.url,
+            scaledSize: new google.maps.Size(
+                markerConfig.scaledSize.width,
+                markerConfig.scaledSize.height
+            )
+        };
+
+        // Add anchor point if defined (for proper pin positioning)
+        if (markerConfig.anchor) {
+            iconConfig.anchor = new google.maps.Point(
+                markerConfig.anchor.x,
+                markerConfig.anchor.y
+            );
+        }
+
         const marker = new google.maps.Marker({
             position: { lat: point.latitude, lng: point.longitude },
             map: map,
-            icon: {
-                url: markerConfig.url,
-                scaledSize: new google.maps.Size(
-                    markerConfig.scaledSize.width,
-                    markerConfig.scaledSize.height
-                )
-            },
+            icon: iconConfig,
             title: point.address,
             optimized: true
         });
