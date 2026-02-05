@@ -1,6 +1,6 @@
 /**
  * Vercel Serverless API Route
- * Proxies requests to LTA DataMall API to avoid CORS issues
+ * Proxies requests to LTA DataMall Batch API
  */
 
 export default async function handler(req, res) {
@@ -14,8 +14,8 @@ export default async function handler(req, res) {
         return res.status(200).end();
     }
 
-    const skip = req.query.skip || 0;
-    const apiUrl = `https://datamall2.mytransport.sg/ltaodataservice/EVChargingPoints?$skip=${skip}`;
+    // Use Batch API - returns all data in single request
+    const apiUrl = 'https://datamall2.mytransport.sg/ltaodataservice/EVCBatch';
 
     try {
         const response = await fetch(apiUrl, {
@@ -27,13 +27,18 @@ export default async function handler(req, res) {
         });
 
         if (!response.ok) {
+            const errorText = await response.text();
+            console.error('LTA API error:', response.status, errorText);
             throw new Error(`LTA API returned ${response.status}`);
         }
 
         const data = await response.json();
         return res.status(200).json(data);
     } catch (error) {
-        console.error('API proxy error:', error);
-        return res.status(500).json({ error: 'Failed to fetch charging points' });
+        console.error('API proxy error:', error.message);
+        return res.status(500).json({
+            error: 'Failed to fetch charging points',
+            details: error.message
+        });
     }
 }

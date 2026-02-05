@@ -18,9 +18,6 @@ const CONFIG = {
     DEFAULT_ZOOM: 12,
     MARKER_ZOOM: 16,
 
-    // Pagination settings
-    PAGE_SIZE: 500,
-
     // Marker icons - Google Maps style teardrop pins
     MARKERS: {
         available: {
@@ -187,63 +184,39 @@ function setupEventListeners() {
 // =============================================================================
 
 /**
- * Fetch all EV charging points from the LTA DataMall API
- * Handles pagination automatically
+ * Fetch all EV charging points from the LTA DataMall Batch API
+ * Returns all data in a single request
  */
 async function fetchChargingPoints() {
-    let allData = [];
-    let skip = 0;
-    let hasMore = true;
-
-    while (hasMore) {
-        const url = `${CONFIG.API_URL}?skip=${skip}`;
-
-        try {
-            const response = await fetch(url, {
-                method: 'GET',
-                headers: {
-                    'accept': 'application/json'
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error(`API request failed with status ${response.status}`);
+    try {
+        const response = await fetch(CONFIG.API_URL, {
+            method: 'GET',
+            headers: {
+                'accept': 'application/json'
             }
+        });
 
-            const data = await response.json();
-            const records = data.value || [];
-
-            if (records.length === 0) {
-                hasMore = false;
-            } else {
-                allData = allData.concat(records);
-                skip += CONFIG.PAGE_SIZE;
-
-                // Safety check to prevent infinite loops
-                if (skip > 10000) {
-                    hasMore = false;
-                }
-            }
-        } catch (error) {
-            console.error('API fetch error:', error);
-
-            // If we have some data, use it; otherwise throw
-            if (allData.length === 0) {
-                throw error;
-            }
-            hasMore = false;
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.details || `API request failed with status ${response.status}`);
         }
+
+        const data = await response.json();
+        const records = data.value || [];
+
+        // Process and store the data
+        chargingPoints = processChargingPoints(records);
+
+        // Update UI
+        updateTotalCount();
+        plotMarkers();
+        updateSidebar();
+
+        return chargingPoints;
+    } catch (error) {
+        console.error('API fetch error:', error);
+        throw error;
     }
-
-    // Process and store the data
-    chargingPoints = processChargingPoints(allData);
-
-    // Update UI
-    updateTotalCount();
-    plotMarkers();
-    updateSidebar();
-
-    return chargingPoints;
 }
 
 /**
