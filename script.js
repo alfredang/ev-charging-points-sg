@@ -13,6 +13,8 @@ const CONFIG = {
     // LTA DataMall API configuration
     API_URL: 'https://datamall2.mytransport.sg/ltaodataservice/EVChargingPoints',
     API_KEY: window.CONFIG_KEYS?.LTA_API_KEY || '',
+    // CORS proxy for browser requests (LTA API doesn't allow direct browser access)
+    CORS_PROXY: 'https://corsproxy.io/?',
 
     // Default map center (Singapore)
     SINGAPORE_CENTER: { lat: 1.3521, lng: 103.8198 },
@@ -197,7 +199,9 @@ async function fetchChargingPoints() {
     let hasMore = true;
 
     while (hasMore) {
-        const url = `${CONFIG.API_URL}?$skip=${skip}`;
+        const apiUrl = `${CONFIG.API_URL}?$skip=${skip}`;
+        // Use CORS proxy to bypass browser restrictions
+        const url = CONFIG.CORS_PROXY + encodeURIComponent(apiUrl);
 
         try {
             const response = await fetch(url, {
