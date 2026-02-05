@@ -1,49 +1,53 @@
 # EV Charging Points Singapore
 
-A client-side web application that displays all Electric Vehicle (EV) charging points in Singapore on an interactive Google Map, with real-time availability status and distance-based sorting.
+A web application that displays all Electric Vehicle (EV) charging points in Singapore on an interactive Google Map, with real-time availability status and distance-based sorting.
+
+**[Live Demo](https://ev-charging-points-sg.vercel.app)**
 
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)
 ![Google Maps](https://img.shields.io/badge/Google%20Maps-4285F4?style=flat&logo=google-maps&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat&logo=vercel&logoColor=white)
 
 ## Features
 
-- **Interactive Map**: Google Maps integration with custom markers for all EV charging points
-- **Real-time Data**: Fetches live data from LTA DataMall API
+- **Interactive Map**: Google Maps with custom teardrop markers for all EV charging points
+- **Real-time Data**: Live data from LTA DataMall Batch API
 - **Distance Sorting**: Automatically detects user location and sorts charging points by distance
-- **Availability Status**: Color-coded markers showing availability:
-  - 🟢 Green: All lots available
-  - 🟡 Yellow: Partial availability
+- **Availability Status**: Color-coded markers:
+  - 🟢 Green: Available
+  - 🟠 Orange: Partial availability
   - 🔴 Red: Fully occupied
   - ⚫ Gray: Status unknown
-- **Search & Filter**: Find charging points by location, postal code, or operator
-- **Responsive Design**: Works on desktop and mobile devices
+- **Search & Filter**: Find by location, postal code, or operator
+- **Responsive Design**: Works on desktop and mobile
+- **Click Interaction**: Click sidebar items to pan map and show info window
 
 ## Tech Stack
 
-- HTML5
-- CSS3 (no frameworks)
-- Vanilla JavaScript
+- HTML5, CSS3, Vanilla JavaScript
 - Google Maps JavaScript API
-- LTA DataMall API
+- LTA DataMall Batch API (EVCBatch)
+- Vercel Serverless Functions (API proxy)
 
 ## Project Structure
 
 ```
 ev-charging-points-sg/
-├── index.html      # Main HTML structure
-├── style.css       # Styling and responsive layout
-├── script.js       # Application logic
-└── README.md       # Documentation
+├── index.html              # Main HTML structure
+├── style.css               # Styling and responsive layout
+├── script.js               # Frontend application logic
+├── api/
+│   └── charging-points.js  # Vercel serverless API proxy
+├── scripts/
+│   └── generate-config.js  # Build script for API keys
+├── config.example.js       # Template for API keys
+├── vercel.json             # Vercel deployment config
+└── package.json            # Project configuration
 ```
 
 ## Getting Started
-
-### Prerequisites
-
-- A modern web browser
-- A local HTTP server (for API requests)
 
 ### Running Locally
 
@@ -56,7 +60,7 @@ ev-charging-points-sg/
 2. Set up API keys:
    ```bash
    cp .env.example .env
-   # Edit .env and add your API keys
+   # Edit .env with your API keys
    python generate-config.py
    ```
 
@@ -65,41 +69,37 @@ ev-charging-points-sg/
    python3 -m http.server 8000
    ```
 
-4. Open http://localhost:8000 in your browser
+4. Open http://localhost:8000
 
-5. Allow location access when prompted (optional, for distance sorting)
-
-## API Configuration
-
-### Getting API Keys
+### API Keys Required
 
 **Google Maps API Key:**
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a project and enable the Maps JavaScript API
-3. Create credentials (API key)
-4. Add the key to `config.js`
+2. Enable Maps JavaScript API
+3. Create an API key with HTTP referrer restrictions
 
 **LTA DataMall API Key:**
 1. Register at [LTA DataMall](https://datamall.lta.gov.sg/content/datamall/en.html)
 2. Request API access
-3. Add the key to `config.js`
 
-### Configuration File
+## Deployment (Vercel)
 
-Copy `config.example.js` to `config.js` and add your keys:
+This app is deployed on Vercel with serverless functions to proxy LTA API requests (avoiding CORS issues).
 
-```javascript
-window.CONFIG_KEYS = {
-    GOOGLE_MAPS_API_KEY: 'your-google-maps-key',
-    LTA_API_KEY: 'your-lta-datamall-key'
-};
-```
+1. Import repository to [Vercel](https://vercel.com)
+2. Add environment variables:
+   - `GOOGLE_MAPS_API_KEY`
+   - `LTA_API_KEY`
+3. Deploy
 
-**Note:** `config.js` is gitignored to prevent exposing API keys
+The serverless function at `/api/charging-points` handles:
+- Fetching the S3 download link from LTA Batch API
+- Downloading and transforming the charging point data
+- Returning normalized data to the frontend
 
 ## Distance Calculation
 
-The application uses the **Haversine formula** to calculate the great-circle distance between the user's location and each charging point. This formula accounts for the Earth's curvature and provides accurate "as-the-crow-flies" distances.
+Uses the **Haversine formula** for accurate great-circle distance:
 
 ```javascript
 function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -110,28 +110,9 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
               Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
               Math.sin(dLon/2) * Math.sin(dLon/2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c; // Distance in kilometers
+    return R * c;
 }
 ```
-
-## Deployment
-
-### GitHub Pages (Automatic)
-
-The app automatically deploys to GitHub Pages on every push to `main`.
-
-**Setup GitHub Secrets:**
-
-1. Go to your repository Settings → Secrets and variables → Actions
-2. Add these repository secrets:
-   - `GOOGLE_MAPS_API_KEY` - Your Google Maps API key
-   - `LTA_API_KEY` - Your LTA DataMall API key
-
-3. Enable GitHub Pages:
-   - Go to Settings → Pages
-   - Source: "GitHub Actions"
-
-The site will be available at: `https://<username>.github.io/ev-charging-points-sg/`
 
 ## License
 
@@ -139,5 +120,6 @@ MIT License
 
 ## Acknowledgements
 
-- [LTA DataMall](https://datamall.lta.gov.sg/) for providing the EV charging point data
-- [Google Maps Platform](https://developers.google.com/maps) for the mapping API
+- [LTA DataMall](https://datamall.lta.gov.sg/) for EV charging point data
+- [Google Maps Platform](https://developers.google.com/maps) for mapping API
+- [Vercel](https://vercel.com) for hosting and serverless functions

@@ -3,8 +3,11 @@
  * Run during Vercel build process
  */
 
-const fs = require('fs');
-const path = require('path');
+import { writeFileSync } from 'fs';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const configContent = `/**
  * Configuration file for API keys
@@ -17,6 +20,6 @@ window.CONFIG_KEYS = {
 };
 `;
 
-const outputPath = path.join(__dirname, '..', 'config.js');
-fs.writeFileSync(outputPath, configContent);
+const outputPath = join(__dirname, '..', 'config.js');
+writeFileSync(outputPath, configContent);
 console.log('Generated config.js');
