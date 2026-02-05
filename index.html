@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EV Charging Points Singapore</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <p>Loading EV charging points...</p>
+    </div>
+
+    <!-- Error Banner -->
+    <div id="error-banner" class="error-banner hidden">
+        <span id="error-message"></span>
+        <button id="error-close" class="error-close">&times;</button>
+    </div>
+
+    <div class="container">
+        <!-- Left Sidebar -->
+        <aside class="sidebar">
+            <header class="sidebar-header">
+                <h1>EV Charging Points</h1>
+                <p class="subtitle">Singapore</p>
+            </header>
+
+            <!-- Location Status -->
+            <div id="location-status" class="location-status">
+                <span class="status-icon">&#128205;</span>
+                <span id="location-text">Detecting your location...</span>
+            </div>
+
+            <!-- Search/Filter (optional enhancement) -->
+            <div class="search-container">
+                <input type="text" id="search-input" placeholder="Search by location or postal code..." />
+            </div>
+
+            <!-- Charging Points List -->
+            <div id="charging-list" class="charging-list">
+                <!-- Charging point cards will be dynamically inserted here -->
+            </div>
+
+            <!-- Stats Footer -->
+            <footer class="sidebar-footer">
+                <span id="total-count">0 charging points</span>
+            </footer>
+        </aside>
+
+        <!-- Map Container -->
+        <main class="map-container">
+            <div id="map"></div>
+        </main>
+    </div>
+
+    <!-- Google Maps JavaScript API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB_0klBkKP7_9i5eO8I5M4UDrBxYB5vwSw&callback=initMap" async defer></script>
+    <script src="script.js"></script>
+</body>
+</html>
